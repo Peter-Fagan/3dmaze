@@ -1,47 +1,38 @@
-
-var canvas = document.getElementById("renderCanvas");
-var engine = new BABYLON.Engine(canvas, true);
+var camera;
+var canvas = document.getElementById("renderCanvas"); // selects the canvas
+var engine = new BABYLON.Engine(canvas, true);        // initialises the engine to run on the canvas
 var ground;
 
 var createScene = function() {
 
   var scene = new BABYLON.Scene(engine);
-  // scene.gravity = new BABYLON.Vector3(0, -0.8, 0);
-  scene.collisionsEnabled = true;
+  scene.gravity = new BABYLON.Vector3(0, -0.98, 0);   // enables gravity
+  scene.collisionsEnabled = true;                     // enables collisions for the scene
   scene.clearColor = new BABYLON.Color3(0, 1, 0);
 
-  // var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI/2, Math.PI / 3, 12, BABYLON.Vector3.Zero(), scene);
-  var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-  camera.checkCollisions = true;
-  // camera.applyGravity = true;
-  camera.setTarget(BABYLON.Vector3.Zero());
-  camera.attachControl(canvas, false);
+  map = new Floorplan(5, 5, 3, scene);              // calls Floorplan to generate the dungeon Floorplan
 
-  var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-  light.intensity = 0.5;
+  var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);  // lights the scene
+  light.intensity = 0.5;                              // Brightness of the light
 
-  map = new Floorplan(6, 10, 10, scene);
-
-  var skybox = BABYLON.Mesh.CreateBox("skyBox", 100.0, scene);
+  var skybox = BABYLON.Mesh.CreateBox("skyBox", 100.0, scene);  // CReates a skybox
   var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
-  skyboxMaterial.backFaceCulling = false;
-  skyboxMaterial.disableLighting = true;
-  skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("./textures/skybox", scene);
-  skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-  skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-  skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+  skyboxMaterial.backFaceCulling = false;                // disables reverse side of the skybox
+  skyboxMaterial.disableLighting = true;                 // disables scene lighting from affecting the skybox
+  skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("./textures/skybox", scene); // creates skybox textures
+  skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE; // makes skybox seamless
   skybox.material = skyboxMaterial;
-  skybox.infiniteDistance = true;
+  skybox.infiniteDistance = true;                             // sets skybox size to inifinite, so you cannot reach/go outside it
 
-return scene;
+  return scene;                                                 // returns scene to render functino
 };
 
-window.addEventListener("resize", function() {
+window.addEventListener("resize", function() {                // resizes the scene to fit the current window
 engine.resize();
 });
 
-var scene = createScene();
+var scene = createScene();                                    // calls the create scene
 
-engine.runRenderLoop(function() {
+engine.runRenderLoop(function() {                             // renders the scene in a loop
 scene.render();
 });

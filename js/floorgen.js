@@ -2,6 +2,8 @@ var lastRoomCoords;
 var Floorplan = function(min_room_size, max_room_size, max_room_number, scene) {
     // ground = BABYLON.Mesh.CreateGround("ground", 6, 6, 2, scene);
     this.scene = scene;
+    this.walls = [];
+    this.grounds = [];
 
     this.room_min_size = min_room_size;
     this.room_max_size = max_room_size;
@@ -16,75 +18,111 @@ var Floorplan = function(min_room_size, max_room_size, max_room_number, scene) {
 Floorplan.prototype.getRandom = function(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 };
-Floorplan.prototype.createFloor = function(x, y) {
+Floorplan.prototype.createFloor = function(x, z) {
 
-    var ground = BABYLON.Mesh.CreateGround("ground", 1, 1, 1, this.scene);
+    var ground = BABYLON.Mesh.CreateGround("ground", 2, 2, 4, this.scene);
 
-    // var box = BABYLON.Mesh.CreateBox("box", 2, this.scene);
-    // box.position.x = x;
-    // box.position.z = y;
+    for ( var i = 0; i < this.walls.length; i++ ) {
+        this.walls[i].dispose(true);
+    }
 
     ground.position.x = x;
-    ground.position.z = y;
+    ground.position.z = z;
+    ground.position.y = 0;
 
     ground.material = new BABYLON.StandardMaterial("ground", this.scene);
     ground.material.diffuseTexture = new BABYLON.Texture("./textures/pavement.jpg", this.scene);
+    ground.material.diffuseTexture.uScale = 2.0;//Repeat 5 times on the Vertical Axes
+    ground.material.diffuseTexture.vScale = 2.0;//Repeat 5 times on the Horizontal Axes
     ground.backFaceCulling = false;
     // ground.material.wireframe = true;
     ground.checkCollisions = true;
+    this.grounds.push({ x: x, z: z });
 };
-Floorplan.prototype.createRoom = function(x1, x2, y1, y2) {
+Floorplan.prototype.createWalls = function(x,z) {
+    var wall = BABYLON.Mesh.CreateBox("Wall", 2, this.scene);
+
+    wall.material = new BABYLON.StandardMaterial("wall", this.scene);
+    wall.material.emissiveTexture = new BABYLON.Texture("./textures/masonry-wall-texture.jpg", this.scene);
+    wall.material.bumpTexture = new BABYLON.Texture("./textures/masonry-wall-bump-map.jpg", this.scene);
+    wall.material.specularTexture = new BABYLON.Texture("./textures/masonry-wall-normal-map.jpg", this.scene);
+
+    wall.position.x = x;
+    wall.position.z = z;
+    wall.position.y = 1;
+
+    wall.checkCollisions = true;
+    this.walls.push( wall );
+};
+
+Floorplan.prototype.createRoom = function(x1, x2, z1, z2) {
     for (var x = x1; x<x2; x+=1) {
-        for (var y = y1; y<y2; y+=1) {
-            this.createFloor(x, y);
+        for (var z = z1; z<z2; z+=1) {
+            this.createFloor(x, z);
         }
     }
 };
-Floorplan.prototype.createHTunnel = function(prev_x, new_x, new_y) {
+Floorplan.prototype.createHTunnel = function(prev_x, new_x, new_z) {
     var min = Math.min(prev_x, new_x);
     var max = Math.max(prev_x, new_x);
-    for (var x = min; x<max+1; x+=1) {
-        this.createFloor(x, new_y);
+    for (var x = min; x<max+2; x+=1) {
+        this.createFloor(x, new_z);
     }
 };
-Floorplan.prototype.createVTunnel = function(prev_y, new_y, new_x) {
-    var min = Math.min(prev_y, new_y);
-    var max = Math.max(prev_y, new_y);
-    for (var y = min; y<max+1; y+=1) {
-        this.createFloor(new_x, y);
+Floorplan.prototype.createVTunnel = function(prev_z, new_z, new_x) {
+    var min = Math.min(prev_z, new_z);
+    var max = Math.max(prev_z, new_z);
+    for (var z = min; z<max+2; z+=1) {
+        this.createFloor(new_x, z);
     }
 };
 Floorplan.prototype.makeMap = function() {
-
     for (var r=0; r<this.max_rooms; r++) {
         var w = this.getRandom(this.room_min_size, this.room_max_size);
         var h = this.getRandom(this.room_min_size, this.room_max_size);
 
         x = this.getRandom(1, (15 - (w/4 + 1)) * 4);
-        y = this.getRandom(1, (15 - (w/4 + 1)) * 4);
+        z = this.getRandom(1, (15 - (w/4 + 1)) * 4);
 
-        this.createRoom(x, x+w, y, y+h);
+        this.createRoom(x, x+w, z, z+h);
 
         if (this.num_rooms === 0) {
             var prev_x = (x + (w/2)+ 2);
-            var prev_y = (y + (h/2)+ 2);
-            lastRoomCoords = {x: prev_x, y: prev_y};
+            var prev_z = (z + (h/2)+ 2);
+            lastRoomCoords = {x: prev_x, z: prev_z};
+
+            camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(prev_x, 0.6, prev_z), this.scene);   // creates the camera in the center of the first room
+            camera.ellipsoid = new BABYLON.Vector3(0.6, 0.3, 0.6);    // creates size of camera
+            camera.checkCollisions = true;                      // camera checks to see if it collides with anything
+            // camera.applyGravity = true;                         //applies gravity to the camera
+            camera.setTarget(BABYLON.Vector3.Zero());           // sets the camera to face world zero - this will change once I can set camera start position
+            camera.attachControl(canvas, false);                // allows arrow keys to move camera
 
         } else {
             var new_x = (x + Math.floor(w/2));
-            var new_y = (y + Math.floor(h/2));
+            var new_z = (z + Math.floor(h/2));
 
             var prev_x = (lastRoomCoords.x);
-            var prev_y = (lastRoomCoords.y);
+            var prev_z = (lastRoomCoords.z);
 
-            this.createHTunnel(prev_x, new_x, prev_y, prev_y);
-            this.createVTunnel(prev_y, new_y, new_x);
+            this.createHTunnel(prev_x, new_x, prev_z, prev_z);
+            this.createVTunnel(prev_z, new_z, new_x);
             prev_x = new_x;
-            prev_y = new_y;
+            prev_z = new_z;
         }
 
-        lastRoomCoords = { x: prev_x, y: prev_y };
+        lastRoomCoords = { x: prev_x, z: prev_z };
         this.num_rooms++;
     }
 
+    for (var z=0; z<60; z+= 2) {
+        for (var x=0; x<60; x+=2) {
+            var commonGround = this.grounds.filter(function (g) {
+              return g.x === x && g.z === z;
+            });
+            if ( commonGround.length === 0 ) {
+                this.createWalls(x, z);
+            }
+        }
+    }
 };
