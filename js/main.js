@@ -10,12 +10,12 @@ var createScene = function() {
   scene.collisionsEnabled = true;                     // enables collisions for the scene
   scene.clearColor = new BABYLON.Color3(0, 1, 0);
 
-  map = new Floorplan(5, 5, 3, scene);              // calls Floorplan to generate the dungeon Floorplan
+  map = new Floorplan(5, 10, 10, scene);              // calls Floorplan to generate the dungeon Floorplan
 
   var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);  // lights the scene
   light.intensity = 0.5;                              // Brightness of the light
 
-  var skybox = BABYLON.Mesh.CreateBox("skyBox", 100.0, scene);  // CReates a skybox
+  var skybox = BABYLON.Mesh.CreateBox("skyBox", 500.0, scene);  // CReates a skybox
   var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
   skyboxMaterial.backFaceCulling = false;                // disables reverse side of the skybox
   skyboxMaterial.disableLighting = true;                 // disables scene lighting from affecting the skybox

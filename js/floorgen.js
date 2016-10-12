@@ -9,7 +9,6 @@ var Floorplan = function(min_room_size, max_room_size, max_room_number, scene) {
     this.room_max_size = max_room_size;
     this.max_rooms = max_room_number;
 
-    // this.lastRoomCenter = {x:0, y:0};
     this.num_rooms = 0;
     this.num_tiles = 0;
 
@@ -20,7 +19,7 @@ Floorplan.prototype.getRandom = function(min, max) {
 };
 Floorplan.prototype.createFloor = function(x, z) {
 
-    var ground = BABYLON.Mesh.CreateGround("ground", 2, 2, 4, this.scene);
+    var ground = BABYLON.Mesh.CreateGround("ground", 1, 1, 1, this.scene);
 
     for ( var i = 0; i < this.walls.length; i++ ) {
         this.walls[i].dispose(true);
@@ -30,17 +29,19 @@ Floorplan.prototype.createFloor = function(x, z) {
     ground.position.z = z;
     ground.position.y = 0;
 
-    ground.material = new BABYLON.StandardMaterial("ground", this.scene);
-    ground.material.diffuseTexture = new BABYLON.Texture("./textures/pavement.jpg", this.scene);
-    ground.material.diffuseTexture.uScale = 2.0;//Repeat 5 times on the Vertical Axes
-    ground.material.diffuseTexture.vScale = 2.0;//Repeat 5 times on the Horizontal Axes
-    ground.backFaceCulling = false;
-    // ground.material.wireframe = true;
-    ground.checkCollisions = true;
     this.grounds.push({ x: x, z: z });
+    var floor = BABYLON.Mesh.MergeMeshes(grounds[true]);
+
+    floor.material = new BABYLON.StandardMaterial("ground", this.scene);
+    floor.material.diffuseTexture = new BABYLON.Texture("./textures/pavement.jpg", this.scene);
+    // ground.material.diffuseTexture.uScale = 2.0;//Repeat 5 times on the Vertical Axes
+    // ground.material.diffuseTexture.vScale = 2.0;//Repeat 5 times on the Horizontal Axes
+    floor.backFaceCulling = false;
+    // ground.material.wireframe = true;
+    floor.checkCollisions = true;
 };
 Floorplan.prototype.createWalls = function(x,z) {
-    var wall = BABYLON.Mesh.CreateBox("Wall", 2, this.scene);
+    var wall = BABYLON.Mesh.CreateBox("Wall", 1, this.scene);
 
     wall.material = new BABYLON.StandardMaterial("wall", this.scene);
     wall.material.emissiveTexture = new BABYLON.Texture("./textures/masonry-wall-texture.jpg", this.scene);
@@ -49,7 +50,7 @@ Floorplan.prototype.createWalls = function(x,z) {
 
     wall.position.x = x;
     wall.position.z = z;
-    wall.position.y = 1;
+    wall.position.y = 0.5;
 
     wall.checkCollisions = true;
     this.walls.push( wall );
@@ -87,16 +88,20 @@ Floorplan.prototype.makeMap = function() {
         this.createRoom(x, x+w, z, z+h);
 
         if (this.num_rooms === 0) {
-            var prev_x = (x + (w/2)+ 2);
-            var prev_z = (z + (h/2)+ 2);
+            var prev_x = (x + (w/2));
+            var prev_z = (z + (h/2));
             lastRoomCoords = {x: prev_x, z: prev_z};
 
-            camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(prev_x, 0.6, prev_z), this.scene);   // creates the camera in the center of the first room
-            camera.ellipsoid = new BABYLON.Vector3(0.6, 0.3, 0.6);    // creates size of camera
-            camera.checkCollisions = true;                      // camera checks to see if it collides with anything
-            // camera.applyGravity = true;                         //applies gravity to the camera
-            camera.setTarget(BABYLON.Vector3.Zero());           // sets the camera to face world zero - this will change once I can set camera start position
-            camera.attachControl(canvas, false);                // allows arrow keys to move camera
+            // camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(prev_x, 0.5, prev_z), this.scene);   // creates the camera in the center of the first room
+            var camera = new BABYLON.GamepadCamera("Camera", new BABYLON.Vector3(prev_x, 0.5, prev_z), this.scene);
+
+            // camera.gamepadMoveSensibility = 100;
+            camera.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.45);    // creates size of camera
+            // camera.ellipsoidOffset = new BABYLON.Vector3(0, 2, 0);
+            camera.checkCollisions = true;    // camera checks to see if it collides with anything
+            // camera.applyGravity = true;       //applies gravity to the camera
+            camera.setTarget(BABYLON.Vector3.Zero());       // sets the camera to face world zero
+            camera.attachControl(canvas, false);            // allows arrow keys to move camera
 
         } else {
             var new_x = (x + Math.floor(w/2));
@@ -115,8 +120,8 @@ Floorplan.prototype.makeMap = function() {
         this.num_rooms++;
     }
 
-    for (var z=0; z<60; z+= 2) {
-        for (var x=0; x<60; x+=2) {
+    for (var z=0; z<60; z+= 1) {
+        for (var x=0; x<60; x+=1) {
             var commonGround = this.grounds.filter(function (g) {
               return g.x === x && g.z === z;
             });
