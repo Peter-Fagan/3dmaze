@@ -29,6 +29,8 @@ Floorplan.prototype.createFloor = function(x, z) {
     ground.position.z = z;
     ground.position.y = 0;
 
+    this.grounds.push({ x: x, z: z });
+
     ground.material = new BABYLON.StandardMaterial("ground", this.scene);
     ground.material.diffuseTexture = new BABYLON.Texture("./textures/pavement.jpg", this.scene);
     // ground.material.diffuseTexture.uScale = 2.0;//Repeat 5 times on the Vertical Axes
@@ -36,7 +38,6 @@ Floorplan.prototype.createFloor = function(x, z) {
     ground.backFaceCulling = false;
     // ground.material.wireframe = true;
     ground.checkCollisions = true;
-    this.grounds.push({ x: x, z: z });
 
 };
 Floorplan.prototype.createWalls = function(x,z) {
@@ -65,14 +66,14 @@ Floorplan.prototype.createRoom = function(x1, x2, z1, z2) {
 Floorplan.prototype.createHTunnel = function(prev_x, new_x, new_z) {
     var min = Math.min(prev_x, new_x);
     var max = Math.max(prev_x, new_x);
-    for (var x = min; x<max+2; x+=1) {
+    for (var x = min; x<max+1; x+=1) {
         this.createFloor(x, new_z);
     }
 };
 Floorplan.prototype.createVTunnel = function(prev_z, new_z, new_x) {
     var min = Math.min(prev_z, new_z);
     var max = Math.max(prev_z, new_z);
-    for (var z = min; z<max+2; z+=1) {
+    for (var z = min; z<max+1; z+=1) {
         this.createFloor(new_x, z);
     }
 };
@@ -95,7 +96,7 @@ Floorplan.prototype.makeMap = function() {
             var camera = new BABYLON.GamepadCamera("Camera", new BABYLON.Vector3(prev_x, 0.6, prev_z), this.scene);
 
             // camera.gamepadMoveSensibility = 100;
-            camera.ellipsoid = new BABYLON.Vector3(0.6, 0.6, 0.6);    // creates size of camera
+            camera.ellipsoid = new BABYLON.Vector3(0.5, 0.3, 0.5);    // creates size of camera
             // camera.ellipsoidOffset = new BABYLON.Vector3(0, 2, 0);
             camera.checkCollisions = true;    // camera checks to see if it collides with anything
             camera.applyGravity = true;       //applies gravity to the camera
