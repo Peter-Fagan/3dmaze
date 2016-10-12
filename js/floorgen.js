@@ -29,16 +29,15 @@ Floorplan.prototype.createFloor = function(x, z) {
     ground.position.z = z;
     ground.position.y = 0;
 
-    this.grounds.push({ x: x, z: z });
-    var floor = BABYLON.Mesh.MergeMeshes(grounds[true]);
-
-    floor.material = new BABYLON.StandardMaterial("ground", this.scene);
-    floor.material.diffuseTexture = new BABYLON.Texture("./textures/pavement.jpg", this.scene);
+    ground.material = new BABYLON.StandardMaterial("ground", this.scene);
+    ground.material.diffuseTexture = new BABYLON.Texture("./textures/pavement.jpg", this.scene);
     // ground.material.diffuseTexture.uScale = 2.0;//Repeat 5 times on the Vertical Axes
     // ground.material.diffuseTexture.vScale = 2.0;//Repeat 5 times on the Horizontal Axes
-    floor.backFaceCulling = false;
+    ground.backFaceCulling = false;
     // ground.material.wireframe = true;
-    floor.checkCollisions = true;
+    ground.checkCollisions = true;
+    this.grounds.push({ x: x, z: z });
+
 };
 Floorplan.prototype.createWalls = function(x,z) {
     var wall = BABYLON.Mesh.CreateBox("Wall", 1, this.scene);
@@ -93,13 +92,13 @@ Floorplan.prototype.makeMap = function() {
             lastRoomCoords = {x: prev_x, z: prev_z};
 
             // camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(prev_x, 0.5, prev_z), this.scene);   // creates the camera in the center of the first room
-            var camera = new BABYLON.GamepadCamera("Camera", new BABYLON.Vector3(prev_x, 0.5, prev_z), this.scene);
+            var camera = new BABYLON.GamepadCamera("Camera", new BABYLON.Vector3(prev_x, 0.6, prev_z), this.scene);
 
             // camera.gamepadMoveSensibility = 100;
-            camera.ellipsoid = new BABYLON.Vector3(0.5, 0.5, 0.45);    // creates size of camera
+            camera.ellipsoid = new BABYLON.Vector3(0.6, 0.6, 0.6);    // creates size of camera
             // camera.ellipsoidOffset = new BABYLON.Vector3(0, 2, 0);
             camera.checkCollisions = true;    // camera checks to see if it collides with anything
-            // camera.applyGravity = true;       //applies gravity to the camera
+            camera.applyGravity = true;       //applies gravity to the camera
             camera.setTarget(BABYLON.Vector3.Zero());       // sets the camera to face world zero
             camera.attachControl(canvas, false);            // allows arrow keys to move camera
 
